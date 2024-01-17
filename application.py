@@ -9,13 +9,23 @@ from pick_list import PickList
 def home():
     return render_template('home.html')
 
+
+@app.route('/leave', methods=["POST"])
+def leave_pick_list():
+    passcode = request.form['code']
+    uname = request.form['username']
+
+    if passcode and uname:
+        Manager.remove_user(passcode, uname)
+
+
 @app.route("/delete", methods=["GET, POST"])
 def delete_pick_list():
     passcode = request.form['code']
     uname = request.form['username']  # Each device's username will be stored on client
 
     if passcode and uname:
-        Manager.delete_entry(passcode)
+        Manager.delete_entry(passcode, uname)
     else:
         abort(400)
 
@@ -33,7 +43,7 @@ def join_pick_list():
         abort(400)
 
 
-# example uri: https://url.com/create?code=<>bins=[{a: num}, {b: num}]
+# example uri: https://url.com/create?code=hello_world&bins=[{254: {a: num}}, {3950: {b: num}}]&username=pat_mart
 @app.route("/create", methods=["GET", "POST"])
 def create_pick_list():
     passcode = request.form['code']

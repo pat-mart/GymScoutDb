@@ -1,3 +1,7 @@
+import sys
+
+from sqlalchemy.orm.attributes import flag_modified
+
 from pick_list import PickList
 from shell import db
 
@@ -5,9 +9,43 @@ from shell import db
 class Manager:
 
     @staticmethod
+    def is_username_free(username: str, code: str) -> bool:
+
+        pl = Manager.get_pick_list(code)
+
+        return username not in pl.usernames and pl.creator != username
+
+    @staticmethod
+    def clear_table():
+        db.session.query(PickList).delete()
+
+        db.session.commit()
+
+    @staticmethod
     def add_user(code: str, username: str):
-        entry = db.session.query(PickList).filter(PickList.code == code)
-        entry.append(username)
+
+        if not Manager.is_username_free(username, code):
+            return
+
+        entry = db.session.query(PickList).filter_by(code=code).first()
+
+        entry.usernames.append(username)
+
+        flag_modified(entry, 'usernames')
+
+        db.session.commit()
+
+    @staticmethod
+    def user_leave(code: str, username: str):
+        entry = Manager.get_pick_list(code)
+        usernames = entry.usernames
+
+        if username not in usernames:
+            return
+
+        usernames.remove(username)
+
+        flag_modified(entry, 'usernames')
 
         db.session.commit()
 
@@ -29,9 +67,19 @@ class Manager:
             db.session.commit()
 
     @staticmethod
-    def delete_entry(passcode: str):
+    def edit_bin_value(passcode: str, bin_name: str, bin_value: int, team_num: int):
+        bins = Manager.get_pick_list(passcode).bins
+
+        if not bins or not bins[team_num]:
+            return
+
+        bins[team_num][bin_name] = bin_value
+        db.session.commit()
+
+    @staticmethod
+    def delete_entry(passcode: str, username: str):
         pl = Manager.get_pick_list(passcode)
 
-        if pl:
+        if pl and username == pl.creator:
             db.session.delete(pl)
             db.session.commit()

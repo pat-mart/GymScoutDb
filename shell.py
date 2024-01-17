@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from password import get_user, get_pw
 from base import Base
 
-cnct_str = f"postgresql+psycopg2://{get_user}:{get_pw}@host:5432/gymscout"
+cnct_str = f"postgresql+psycopg2://{get_user()}:{get_pw()}@localhost/gymscout"
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = cnct_str
