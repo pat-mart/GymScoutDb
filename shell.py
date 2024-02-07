@@ -14,3 +14,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = cnct_str
 
 db = SQLAlchemy(model_class=Base)
 
+
+def get_client():
+    return app.test_client()
+
+
+def get_test_cli_runner():
+    return app.test_cli_runner()

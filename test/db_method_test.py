@@ -20,8 +20,21 @@ class DbTest(unittest.TestCase):
             code=code,
             creator="pat-mart",
             usernames=[],
-            bins={3950: {"max_points": 0}, 254: {"auto_points": 25}}
+            bin_keys=["hello", "goodbye"],
+            bins={}
         )
+
+    def test_invalid_username(self):
+        with app.app_context():
+            Manager.clear_table()
+
+            Manager.add_list(DbTest.get_pl('aefwe3950'))
+            Manager.add_user('aefwe3950', 'pat-mart')
+
+            Manager.add_user('aefwe3950', 'hello_man')
+            Manager.add_user('aefwe3950', 'hello_man')
+
+            self.assertEqual(len(Manager.get_pick_list('aefwe3950').usernames), 1)
 
     def test_joins_pl(self):
         with app.app_context():
@@ -45,33 +58,37 @@ class DbTest(unittest.TestCase):
             pl = Manager.get_pick_list("3950nyny")
 
             Manager.add_user("3950nyny", "p_mart")
-            Manager.add_user("3950nyny", "rico")
+            Manager.add_user("3950nyny", "j_mart")
             Manager.add_user("3950nyny", "loo_mart")
 
             self.assertEqual(len(pl.usernames), 3)
 
             Manager.user_leave("3950nyny", "p_mart")
-            Manager.user_leave("3950nyny", "rico")
+            Manager.user_leave("3950nyny", "j_mart")
             Manager.user_leave("3950nyny", "loo_mart")
 
             self.assertEqual(len(pl.usernames), 0)
 
     def test_creates_pl(self):
         with app.app_context():
+
+            db.create_all()
+
             Manager.clear_table()
 
             new_val = PickList(
-                code="hello_world",
+                code='hello_world',
                 creator="pat-mart",
                 usernames=[],
-                bins={"max_points": 0, "auto_points": 0, "teleop_points": 0}
+                bins={},
+                bin_keys=["auto_points", "teleop points", "auto game pieces"],
             )
 
             Manager.add_list(new_val)
 
             pl = Manager.get_pick_list("hello_world")
 
-            self.assertIsNotNone(pl, "PickList was not created")
+            self.assertIsNotNone(pl)
 
 
 if __name__ == '__main__':

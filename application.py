@@ -16,7 +16,7 @@ def leave_pick_list():
     uname = request.form['username']
 
     if passcode and uname:
-        Manager.remove_user(passcode, uname)
+        Manager.user_leave(passcode, uname)
 
 
 @app.route("/delete", methods=["GET, POST"])
@@ -30,7 +30,7 @@ def delete_pick_list():
         abort(400)
 
 
-# example uri: https/url.com/join?username=pat-mart
+# example uri: https/url.com/join?username=pat-mart&code=<code>
 @app.route("/join", methods=["GET", "POST"])
 def join_pick_list():
     username = request.form['username']
@@ -43,7 +43,7 @@ def join_pick_list():
         abort(400)
 
 
-# example uri: https://url.com/create?code=hello_world&bins=[{254: {a: num}}, {3950: {b: num}}]&username=pat_mart
+# example uri: https://url.com/create?code=hello_world&bins=["auto_points", "teleop"]&teams=[254, 3950]&username=p_mart
 @app.route("/create", methods=["GET", "POST"])
 def create_pick_list():
     passcode = request.form['code']

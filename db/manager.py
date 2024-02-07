@@ -1,5 +1,4 @@
-import sys
-
+import sqlalchemy.exc
 from sqlalchemy.orm.attributes import flag_modified
 
 from pick_list import PickList
@@ -17,7 +16,12 @@ class Manager:
 
     @staticmethod
     def clear_table():
-        db.session.query(PickList).delete()
+        query = db.session.query(PickList)
+
+        try:
+            query.delete()
+        except sqlalchemy.exc.ProgrammingError:
+            return
 
         db.session.commit()
 
@@ -58,7 +62,7 @@ class Manager:
     def get_pick_list(passcode: str) -> PickList:
         return db.session.query(PickList).filter_by(code=passcode).first()
 
-    @staticmethod
+    @staticmethod  # Managing such a feature in a user app would be difficult. Not sure if would be useful
     def edit_entry(passcode: str, new_vers: PickList):
         pl = Manager.get_pick_list(passcode)
 
@@ -67,13 +71,24 @@ class Manager:
             db.session.commit()
 
     @staticmethod
-    def edit_bin_value(passcode: str, bin_name: str, bin_value: int, team_num: int):
+    def add_bin(passcode: str, bin_category: str, bin_value: int, team_num: int):
+        bins = Manager.get_pick_list(passcode).bins
+
+        if team_num in bins:
+            bins[team_num][bin_category] = bin_value
+
+        flag_modified(bins, "bins")
+
+        db.session.commit()
+
+    @staticmethod
+    def edit_bin_value(passcode: str, bin_category: str, bin_value: int, team_num: int):
         bins = Manager.get_pick_list(passcode).bins
 
         if not bins or not bins[team_num]:
             return
 
-        bins[team_num][bin_name] = bin_value
+        bins[team_num][bin_category] = bin_value
         db.session.commit()
 
     @staticmethod
